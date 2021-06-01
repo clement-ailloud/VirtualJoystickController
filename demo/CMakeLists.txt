@@ -18,18 +18,19 @@ elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     )
 endif()
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+#target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
     PUBLIC
 	Qt5::Widgets
 	Qt5::Core
+        VirtualJoystickController
 )
 
 target_link_libraries(VirtualJoystickControllerDemo
     PRIVATE
-    Qt5::Core
-    Qt5::Widgets
+        Qt5::Core
+        Qt5::Widgets
 )
 
 set_target_properties(VirtualJoystickControllerDemo

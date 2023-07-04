@@ -185,6 +185,7 @@ void Joystick::paintEvent(QPaintEvent * /*event*/)
     }
 }
 
+// todo do not rely center of circle is (0;0)
 bool contains(int x, int y, int radius)
 {
     return (pow(x, 2) + pow(y, 2) <= pow(radius, 2));
@@ -192,10 +193,10 @@ bool contains(int x, int y, int radius)
 
 bool contains(const QPoint &pos, int radius)
 {
-    return (pow(pos.x(), 2) + pow(pos.y(), 2) <= pow(radius, 2));
+    return contains(pos.x(), pos.y(), radius);
 }
 
-QPoint translateTopLeftToCenter(const QPoint &pos, const QSize &boundingSize)
+QPoint translatedTopLeftToCenter(const QPoint &pos, const QSize &boundingSize)
 {
     // Recenter coordinates
     return {pos.x() - boundingSize.width() / 2, pos.y() - boundingSize.height() / 2};
@@ -203,14 +204,30 @@ QPoint translateTopLeftToCenter(const QPoint &pos, const QSize &boundingSize)
 
 void Joystick::mousePressEvent(QMouseEvent *event)
 {
-    const auto pos = translateTopLeftToCenter({event->x(), event->y()});
+    const auto pos = translatedTopLeftToCenter({event->x(), event->y()});
 
     if (contains(pos, m_controller.radius()))
     {
         emit pressed();
     }
 
-    update();
+    update(); // should not be required
+}
+
+double angleFromCenter(int x, int y)
+{
+    const auto radius = std::sqrt(std::pow(x, 2) + std::pow(y, 2));
+
+    auto angle = acos(x / radius);
+    // or angle = asin(y / radius);
+
+    if (y > 0)
+    {
+        angle = angle + (M_PI - angle) * 2.0;
+    }
+
+    // Returns the opposite of angle because Qt system coordinates is inverted
+    return -angle;
 }
 
 void Joystick::mouseMoveEvent(QMouseEvent *event)
@@ -220,11 +237,13 @@ void Joystick::mouseMoveEvent(QMouseEvent *event)
         return;
     }
 
+    const auto width = width();
+    const auto height = height();
     const QPoint relativeMousePosition(event->x(), event->y());
 
     // Recenter coordinates
-    const auto x = relativeMousePosition.x() - width() / 2;
-    const auto y = relativeMousePosition.y() - height() / 2;
+    const auto x = relativeMousePosition.x() - width / 2;
+    const auto y = relativeMousePosition.y() - height / 2;
 
     switch (m_mode)
     {
@@ -236,21 +255,10 @@ void Joystick::mouseMoveEvent(QMouseEvent *event)
         }
         else
         {
-            const auto radius = std::sqrt(std::pow(x, 2) + std::pow(y, 2));
-
-            auto angle = acos(x / radius);
-            // or angle = asin(y / radius);
-
-            if (y > 0)
-            {
-                angle = angle + (M_PI - angle) * 2.0;
-            }
-
-            // Get opposite of angle because Qt system coordinate is inverted
-            angle = -angle;
-
-            m_controllerPosition.setX(m_joystick.radius() * cos(angle) + width() / 2);
-            m_controllerPosition.setY(m_joystick.radius() * sin(angle) + height() / 2);
+            // Keep track of the mouse even though it is outside the joystick
+            const auto angle = angleFromCenter(x, y);
+            m_controllerPosition.setX(m_joystick.radius() * cos(angle) + width / 2);
+            m_controllerPosition.setY(m_joystick.radius() * sin(angle) + height / 2);
         }
     }
     break;
@@ -264,11 +272,11 @@ void Joystick::mouseMoveEvent(QMouseEvent *event)
         {
             if (x > 0)
             {
-                m_controllerPosition.setX(width() / 2 + m_joystick.radius());
+                m_controllerPosition.setX(width / 2 + m_joystick.radius());
             }
             else
             {
-                m_controllerPosition.setX(width() / 2 - m_joystick.radius());
+                m_controllerPosition.setX(width / 2 - m_joystick.radius());
             }
         }
     }
@@ -283,21 +291,18 @@ void Joystick::mouseMoveEvent(QMouseEvent *event)
         {
             if (y > 0)
             {
-                m_controllerPosition.setY(height() / 2 + m_joystick.radius());
+                m_controllerPosition.setY(height / 2 + m_joystick.radius());
             }
             else
             {
-                m_controllerPosition.setY(height() / 2 - m_joystick.radius());
+                m_controllerPosition.setY(height / 2 - m_joystick.radius());
             }
         }
     }
     break;
-    default:
-        throw;
     }
 
     emit valueChanged(x, y);
-
     update();
 }
 

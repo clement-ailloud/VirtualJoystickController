@@ -1,0 +1,77 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default",
+      "description": "Configure the build using Ninja generator",
+      "generator": "Ninja"
+    },
+    {
+      "name": "ninja-multi",
+      "inherits": "default",
+      "displayName": "Ninja Multi-Config",
+      "description": "Configure the build using Ninja Multi-Config generator",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build/${presetName}"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "description": "Build all using Ninja generator",
+      "displayName": "Default"
+    },
+    {
+      "name": "ninja-multi",
+      "configurePreset": "ninja-multi",
+      "description": "Build all using Ninja Multi-Config generator",
+      "displayName": "Ninja Multi-Config"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ninja-multi",
+      "configurePreset": "ninja-multi",
+      "description": "Test all using Ninja Multi-Config generator",
+      "output": {"outputOnFailure": true},
+      "execution": {"noTestsAction": "error", "stopOnFailure": true}
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "ninja-multi",
+      "configurations": [
+         "MinSizeRel"
+      ],
+      "configurePreset": "ninja-multi",
+      "description": "Generate all using Ninja Multi-Config generator",
+      "displayName": "Ninja Multi-Config",
+      "generators": [
+        "DEB"
+      ]
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "ninja-multi",
+      "displayName": "Ninja Multi-Config",
+      "description": "Configure, build, test and pack",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ninja-multi"
+        },
+        {
+          "type": "build",
+          "name": "ninja-multi"
+        },
+        {
+          "type": "package",
+          "name": "ninja-multi"
+        }
+      ]
+    }
+  ]
+}

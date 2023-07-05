@@ -35,7 +35,10 @@
       "name": "ninja-multi",
       "configurePreset": "ninja-multi",
       "description": "Test all using Ninja Multi-Config generator",
-      "output": {"outputOnFailure": true},
+      "output": {
+          "outputOnFailure": true,
+          "shortProgress": true
+      },
       "execution": {"noTestsAction": "error", "stopOnFailure": true}
     }
   ],

@@ -1,10 +1,10 @@
 ﻿cmake_minimum_required(VERSION 3.0.0)
 
-add_executable(VirtualJoystickControllerDemo
-               ${CMAKE_SOURCE_DIR}/demo/virtual_joystick_controller_demo.cpp)
+add_executable(VirtualJoystickControllerDemo virtual_joystick_controller_demo.cpp)
+
 target_link_libraries(
-    ${CMAKE_PROJECT_NAME} PUBLIC VirtualJoystickController Qt${QT_VERSION_MAJOR}::Core
-                                 Qt${QT_VERSION_MAJOR}::Widgets)
+    VirtualJoystickControllerDemo PUBLIC Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets
+                                         VirtualJoystickController)
 
 set_target_properties(
     VirtualJoystickControllerDemo

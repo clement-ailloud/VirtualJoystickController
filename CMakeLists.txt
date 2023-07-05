@@ -1,8 +1,8 @@
-﻿cmake_minimum_required(VERSION 3.0.0)
+﻿cmake_minimum_required(VERSION 3.12.0)
 
 project(
-    VirtualJoystickControllerDemo
-    VERSION 1.0
+    VirtualJoystickController
+    VERSION 1.0.0
     LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH cmake/modules)
@@ -16,14 +16,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_LINK_WHAT_YOU_USE iwyu ${CMAKE_BINARY_DIR})
 # set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE )
 
-# Common output directories set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-# ${CMAKE_BINARY_DIR}/lib/$<LOWER_CASE:$<CONFIG>>) set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
-# ${CMAKE_BINARY_DIR}/lib/$<LOWER_CASE:$<CONFIG>>)
-
 # Ninja Multi-Config
 if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
-    set(CMAKE_CONFIGURATION_TYPES "MinSizeRel;Release;Debug")
-    set(CMAKE_CROSS_CONFIGS "MinSizeRel;Release;Debug")
+    set(CMAKE_CONFIGURATION_TYPES "Debug;MinSizeRel;Release")
+    set(CMAKE_CROSS_CONFIGS "Debug;MinSizeRel;Release")
 endif()
 
 # Common compile options
@@ -52,9 +48,10 @@ find_package(
 
 # find_package(Valgrind REQUIRED)
 
-add_library(
-    VirtualJoystickController SHARED ${CMAKE_SOURCE_DIR}/include/virtual_joystick_controller.h
-                                     ${CMAKE_SOURCE_DIR}/src/virtual_joystick_controller.cpp)
+set(PUBLIC_HEADER_FILES include/virtual_joystick_controller.h)
+set(SOURCE_FILES src/virtual_joystick_controller.cpp)
+
+add_library(VirtualJoystickController SHARED ${PUBLIC_HEADER_FILES} ${SOURCE_FILES})
 
 target_include_directories(
     VirtualJoystickController PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -70,26 +67,31 @@ set_target_properties(
                CXX_STANDARD_REQUIRED ON
                LINKER_LANGUAGE CXX
                LINK_WHAT_YOU_USE TRUE
-               AUTOMOC TRUE)
+               AUTOMOC TRUE
+               PUBLIC_HEADER ${PUBLIC_HEADER_FILES})
+
+add_subdirectory(demo)
 
 include(CMakePackageConfigHelpers)
 
 # Configure the VirtualJoystickController.cmake config file
-set(CONFIG_FILES_SUFFIX_PATH lib/cmake/VirtualJoystickController)
+set(CONFIG_FILES_PREFIX_PATH lib/cmake/VirtualJoystickController)
 
 configure_package_config_file(
     ${CMAKE_CURRENT_LIST_DIR}/VirtualJoystickControllerConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfig.cmake
-    INSTALL_DESTINATION ${CONFIG_FILES_SUFFIX_PATH})
+    INSTALL_DESTINATION ${CONFIG_FILES_PREFIX_PATH})
 
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfigVersion.cmake
     VERSION 1.0.0
     COMPATIBILITY SameMajorVersion)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfig.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfigVersion.cmake
-        DESTINATION ${CONFIG_FILES_SUFFIX_PATH})
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfig.cmake
+          ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfigVersion.cmake
+    DESTINATION ${CONFIG_FILES_PREFIX_PATH}
+    COMPONENT Development)
 
 # Generate the VirtualJoystickControllerTargets.cmake file
 export(
@@ -100,25 +102,54 @@ export(
 install(
     TARGETS VirtualJoystickController
     EXPORT VirtualJoystickControllerTargets
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin)
+    LIBRARY COMPONENT libraries NAMELINK_COMPONENT Development
+    PUBLIC_HEADER COMPONENT Development)
 
 install(
     EXPORT VirtualJoystickControllerTargets
+    DESTINATION ${CONFIG_FILES_PREFIX_PATH}
     NAMESPACE VirtualJoystickController::
     FILE VirtualJoystickControllerTargets.cmake
-    DESTINATION lib/cmake/VirtualJoystickController)
-
-add_subdirectory(demo)
+    COMPONENT Development)
 
 # list(APPEND CMAKE_CTEST_ARGUMENTS "--verbose")
 # include(CTest)
 
-set(CPACK_GENERATOR "DEB")
-set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
-set(CPACK_PACKAGE_VERSION "1.0.0")
-# set(CPACK_PACKAGE_CONTACT "your_email@example.com")
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Your package description.")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Clement Ailloud")
+# Generate the binary package
+set(CPACK_PACKAGE_CONTACT "clem.ailloud@gmail.com")
+set(CPACK_PACKAGE_MAINTAINER "Clement Ailloud")
+set(CPACK_PACKAGE_NAME "libinputcontrols")
+#set(CPACK_PACKAGE_VERSION "1.0.0")
+
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+set(CPACK_DEB_PACKAGE_COMPONENT ON)
+set(CPACK_DEB_UNINSTALL ON)
+
 include(CPack)
+
+# Generate the runtime package
+cpack_add_install_type(Full DISPLAY_NAME "Everything")
+
+cpack_add_component_group(RuntimeGroup)
+
+cpack_add_component(
+    libraries
+    DISPLAY_NAME "Runtime package"
+    DESCRIPTION "Runtime package description"
+    REQUIRED
+    GROUP RuntimeGroup
+    INSTALL_TYPES Full)
+
+# Generate the development package component
+cpack_add_component_group(dev EXPANDED
+                          DESCRIPTION "All of the tools you'll ever need to develop software")
+
+cpack_add_install_type(Developer)
+
+cpack_add_component(
+    Development
+    DISPLAY_NAME "Development package"
+    DESCRIPTION "Development package description"
+    GROUP dev
+    DEPENDS libraries
+    INSTALL_TYPES Developer Full)

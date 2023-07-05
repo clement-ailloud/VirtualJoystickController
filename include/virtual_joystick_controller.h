@@ -56,6 +56,7 @@ public:
     void setRadius(int radius) { m_radius = radius; }
 
 private:
+    Point m_center;
     int m_radius;
 };
 

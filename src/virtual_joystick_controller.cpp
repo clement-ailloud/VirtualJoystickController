@@ -204,7 +204,7 @@ QPoint translatedTopLeftToCenter(const QPoint &pos, const QSize &boundingSize)
 
 void Joystick::mousePressEvent(QMouseEvent *event)
 {
-    const auto pos = translatedTopLeftToCenter({event->x(), event->y()});
+    const auto pos = translatedTopLeftToCenter({event->x(), event->y()}, {width(), height()});
 
     if (contains(pos, m_controller.radius()))
     {
@@ -237,8 +237,8 @@ void Joystick::mouseMoveEvent(QMouseEvent *event)
         return;
     }
 
-    const auto width = width();
-    const auto height = height();
+    const auto width = QWidget::width();
+    const auto height = QWidget::height();
     const QPoint relativeMousePosition(event->x(), event->y());
 
     // Recenter coordinates

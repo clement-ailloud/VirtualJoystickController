@@ -42,8 +42,9 @@
   "packagePresets": [
     {
       "name": "ninja-multi",
+      "configFile": "CPackConfig.cmake",
       "configurations": [
-         "MinSizeRel"
+         "Debug"
       ],
       "configurePreset": "ninja-multi",
       "description": "Generate all using Ninja Multi-Config generator",

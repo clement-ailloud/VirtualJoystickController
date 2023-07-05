@@ -12,3 +12,5 @@ set_target_properties(
                CXX_STANDARD_REQUIRED ON
                LINKER_LANGUAGE CXX
                LINK_WHAT_YOU_USE TRUE)
+
+install(TARGETS VirtualJoystickControllerDemo RUNTIME COMPONENT Demos)

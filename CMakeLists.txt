@@ -70,8 +70,6 @@ set_target_properties(
                AUTOMOC TRUE
                PUBLIC_HEADER ${PUBLIC_HEADER_FILES})
 
-add_subdirectory(demo)
-
 include(CMakePackageConfigHelpers)
 
 # Configure the VirtualJoystickController.cmake config file
@@ -112,6 +110,8 @@ install(
     FILE VirtualJoystickControllerTargets.cmake
     COMPONENT Development)
 
+add_subdirectory(demos)
+
 # list(APPEND CMAKE_CTEST_ARGUMENTS "--verbose")
 # include(CTest)
 
@@ -130,14 +130,15 @@ include(CPack)
 # Generate the runtime package
 cpack_add_install_type(Full DISPLAY_NAME "Everything")
 
-cpack_add_component_group(RuntimeGroup)
+# Generate the demos package
+cpack_add_component_group(demos)
 
 cpack_add_component(
-    libraries
-    DISPLAY_NAME "Runtime package"
-    DESCRIPTION "Runtime package description"
-    REQUIRED
-    GROUP RuntimeGroup
+    Demos
+    DISPLAY_NAME "Demos package"
+    DESCRIPTION "Demos package description"
+    GROUP demos
+    DEPENDS libraries
     INSTALL_TYPES Full)
 
 # Generate the development package component
@@ -149,7 +150,7 @@ cpack_add_install_type(Developer)
 cpack_add_component(
     Development
     DISPLAY_NAME "Development package"
-    DESCRIPTION "Development package description"
+    DESCRIPTION "C++ Libraries development files"
     GROUP dev
     DEPENDS libraries
     INSTALL_TYPES Developer Full)

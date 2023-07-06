@@ -153,7 +153,8 @@ QPoint getCenter(int width, int height)
     return {width / 2, height / 2};
 }
 
-void drawDefaultJoystickController(QPainter &painter, const Circle &circle, const QColor &color) {}
+// void drawDefaultJoystickController(QPainter &painter, const Circle &circle, const QColor &color)
+// {}
 
 void Joystick::paintEvent(QPaintEvent * /*event*/)
 {
@@ -300,6 +301,8 @@ void Joystick::mouseMoveEvent(QMouseEvent *event)
         }
     }
     break;
+    case NoAxis:
+        break;
     }
 
     emit valueChanged(x, y);

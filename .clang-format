@@ -105,6 +105,7 @@ IncludeBlocks:   Preserve
 IncludeCategories:
   - Regex: '^#include "(.*)"'
   - Regex: '^#include "Q(.*)"'
+  - Regex: '^#include "q(.*)"'
   - Regex: '^#include "(gtest|gmock)/(.*)"'
   - Regex: '^#include "boost/(.*)"'
   - Regex: '^"(llvm|llvm-c|clang|clang-c)/'

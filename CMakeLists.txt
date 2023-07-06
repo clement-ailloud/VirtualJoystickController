@@ -5,21 +5,33 @@ project(
     VERSION 1.0.0
     LANGUAGES CXX)
 
-list(APPEND CMAKE_MODULE_PATH cmake/modules)
+list(APPEND CMAKE_MODULE_PATH cmake/include)
 include(PreCommit)
+
+if(${CMAKE_VERSION} VERSION_LESS "3.26")
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 # set(CMAKE_CXX_CPPCHECK cppcheck --project=${CMAKE_BINARY_DIR}/compile_commands.json --enable=all
 # --output-file=${CMAKE_BINARY_DIR}/cppcheck_output.txt) set(CMAKE_CXX_CLANG_TIDY clang-tidy
 # --use-color -header-filter=.* --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy -p
 # ${CMAKE_BINARY_DIR})
-set(CMAKE_LINK_WHAT_YOU_USE iwyu ${CMAKE_BINARY_DIR})
-# set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE )
+
+find_program(IWYU_PATH NAMES include-what-you-use iwyu)
+if(IWYU_PATH)
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
+        "${IWYU_PATH};-o;clang;--no_comments;--quoted_includes_first;--cxx17ns")
+endif()
+
+set(CMAKE_LINK_WHAT_YOU_USE ON)
+set(CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG "-Xiwyu --verbose=3")
 
 # Ninja Multi-Config
 if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
     set(CMAKE_CONFIGURATION_TYPES "Debug;MinSizeRel;Release")
     set(CMAKE_CROSS_CONFIGS "Debug;MinSizeRel;Release")
+    set(CMAKE_DEFAULT_CONFIGS "Debug;MinSizeRel;Release")
 endif()
 
 # Common compile options
@@ -27,10 +39,11 @@ if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR ("${CMAKE_CXX_COMPILER_ID}" 
     add_compile_options(
         $<$<CONFIG:Debug>:-g>
         $<$<CONFIG:Debug>:-O0>
-        $<$<CONFIG:Release>:-O3>
+        # $<$<CONFIG:Release>:-O3>
         -Wall
         -Wextra
         -Wpedantic
+        $<$<CONFIG:MinSizeRel>:-Werror>
         $<$<CONFIG:Release>:-Werror>
         -fdiagnostics-color=always
         $<$<CONFIG:Debug>:-fprofile-instr-generate>
@@ -51,7 +64,7 @@ find_package(
 set(PUBLIC_HEADER_FILES include/virtual_joystick_controller.h)
 set(SOURCE_FILES src/virtual_joystick_controller.cpp)
 
-add_library(VirtualJoystickController SHARED ${PUBLIC_HEADER_FILES} ${SOURCE_FILES})
+add_library(VirtualJoystickController ${PUBLIC_HEADER_FILES} ${SOURCE_FILES})
 
 target_include_directories(
     VirtualJoystickController PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -80,10 +93,17 @@ configure_package_config_file(
     ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfig.cmake
     INSTALL_DESTINATION ${CONFIG_FILES_PREFIX_PATH})
 
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfigVersion.cmake
-    VERSION 1.0.0
-    COMPATIBILITY SameMajorVersion)
+if(CMAKE_VERSION VERSION_LESS 3.14)
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfigVersion.cmake
+        VERSION 1.0.0
+        COMPATIBILITY SameMajorVersion)
+else()
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfigVersion.cmake
+        VERSION 1.0.0
+        COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
+endif()
 
 install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfig.cmake
@@ -112,19 +132,18 @@ install(
 
 add_subdirectory(demos)
 
-# list(APPEND CMAKE_CTEST_ARGUMENTS "--verbose")
 # include(CTest)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+endif()
 
 # Generate the binary package
 set(CPACK_PACKAGE_CONTACT "clem.ailloud@gmail.com")
 set(CPACK_PACKAGE_MAINTAINER "Clement Ailloud")
 set(CPACK_PACKAGE_NAME "libinputcontrols")
-#set(CPACK_PACKAGE_VERSION "1.0.0")
-
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_DEB_PACKAGE_COMPONENT ON)
 set(CPACK_DEB_UNINSTALL ON)
-
 include(CPack)
 
 # Generate the runtime package

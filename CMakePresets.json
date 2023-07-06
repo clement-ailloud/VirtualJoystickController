@@ -35,11 +35,13 @@
       "name": "ninja-multi",
       "configurePreset": "ninja-multi",
       "description": "Test all using Ninja Multi-Config generator",
-      "output": {
-          "outputOnFailure": true,
-          "shortProgress": true
+      "execution": {
+          "noTestsAction": "error",
+          "stopOnFailure": true
       },
-      "execution": {"noTestsAction": "error", "stopOnFailure": true}
+      "output": {
+          "outputOnFailure": true
+      }
     }
   ],
   "packagePresets": [
@@ -47,7 +49,7 @@
       "name": "ninja-multi",
       "configFile": "CPackConfig.cmake",
       "configurations": [
-         "Debug"
+         "MinSizeRel"
       ],
       "configurePreset": "ninja-multi",
       "description": "Generate all using Ninja Multi-Config generator",

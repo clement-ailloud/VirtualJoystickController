@@ -19,11 +19,3 @@ repos:
   hooks:
   - id: clang-format
     args: [-i]
-- repo: local
-  hooks:
-  - id: run-tests
-    args: [--output-on-failure,--stop-on-failure,--progress,--preset;ninja-multi]
-    entry: ctest
-    language: system
-    name: Run tests
-    stages: [pre-commit]

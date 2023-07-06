@@ -19,3 +19,11 @@ repos:
   hooks:
   - id: clang-format
     args: [-i]
+- repo: local
+  hooks:
+  - id: ctest-run
+    args: [--preset,ninja-multi]
+    entry: ctest
+    language: system
+    name: ctest-run
+    stages: [pre-commit]

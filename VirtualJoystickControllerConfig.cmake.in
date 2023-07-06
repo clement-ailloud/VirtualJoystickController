@@ -1,11 +1,11 @@
 @PACKAGE_INIT@
 
-# Set the include directory for the package
-# set_and_check(FOO_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
-set(FOO_INCLUDE_DIR "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
+set_and_check(VirtualJoystickController_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
 
 # Set the installation directory for the package
 set_and_check(VirtualJoystickController_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
+check_required_components(VirtualJoystickController)
 
 # Add any necessary dependencies or settings
 include("${CMAKE_CURRENT_LIST_DIR}/VirtualJoystickControllerTargets.cmake")

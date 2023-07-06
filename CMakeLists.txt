@@ -25,7 +25,7 @@ if(IWYU_PATH)
 endif()
 
 set(CMAKE_LINK_WHAT_YOU_USE ON)
-set(CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG "-Xiwyu --verbose=3")
+#set(CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG "-Xiwyu --verbose=3")
 
 # Ninja Multi-Config
 if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
@@ -50,16 +50,18 @@ if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR ("${CMAKE_CXX_COMPILER_ID}" 
         $<$<CONFIG:Debug>:-fcoverage-mapping>)
 endif()
 
-if(CMAKE_PLATFORM_ID STREQUAL "Linux")
-    set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
-endif()
-
 find_package(
     Qt5
     COMPONENTS Core
     REQUIRED Widgets REQUIRED)
 
 # find_package(Valgrind REQUIRED)
+
+if(CMAKE_PLATFORM_ID STREQUAL "Linux")
+    set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
+endif()
+
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 set(PUBLIC_HEADER_FILES include/virtual_joystick_controller.h)
 set(SOURCE_FILES src/virtual_joystick_controller.cpp)
@@ -81,7 +83,13 @@ set_target_properties(
                LINKER_LANGUAGE CXX
                LINK_WHAT_YOU_USE TRUE
                AUTOMOC TRUE
+               AUTOGEN_PARALLEL AUTO
                PUBLIC_HEADER ${PUBLIC_HEADER_FILES})
+
+include(GNUInstallDirs)
+set(INCLUDE_INSTALL_DIR
+    ${CMAKE_INSTALL_INCLUDEDIR}
+    CACHE PATH "Location of header files")
 
 include(CMakePackageConfigHelpers)
 
@@ -91,7 +99,8 @@ set(CONFIG_FILES_PREFIX_PATH lib/cmake/VirtualJoystickController)
 configure_package_config_file(
     ${CMAKE_CURRENT_LIST_DIR}/VirtualJoystickControllerConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/VirtualJoystickControllerConfig.cmake
-    INSTALL_DESTINATION ${CONFIG_FILES_PREFIX_PATH})
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/VirtualJoystickController
+    PATH_VARS INCLUDE_INSTALL_DIR)
 
 if(CMAKE_VERSION VERSION_LESS 3.14)
     write_basic_package_version_file(
